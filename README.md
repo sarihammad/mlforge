@@ -6,7 +6,7 @@
 ![Docker](https://img.shields.io/badge/Docker-Compose-2496ED?logo=docker&logoColor=white)
 ![License](https://img.shields.io/badge/license-MIT-green)
 
-End-to-end ML platform covering the full model lifecycle: data validation, experiment tracking, model registry, canary deployment, drift detection, and automated retraining. The ML task is simple by design — **0.927 AUC-ROC** on Adult Income with XGBoost. The platform around it is not, and that platform is what most ML portfolios omit.
+End-to-end ML platform covering the full model lifecycle: data validation, experiment tracking, model registry, canary deployment, drift detection, and automated retraining. **0.927 AUC-ROC** on Adult Income with XGBoost. 
 
 ---
 
