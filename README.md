@@ -8,8 +8,6 @@
 
 End-to-end ML platform covering the full model lifecycle: data validation, experiment tracking, model registry, canary deployment, drift detection, and automated retraining. The ML task is simple by design — **0.927 AUC-ROC** on Adult Income with XGBoost. The platform around it is not, and that platform is what most ML portfolios omit.
 
-> Train → register → promote → canary-deploy → detect drift → retrain → roll back. Each step is automated, observable, and rollback-safe. This is the infrastructure every production ML system needs.
-
 ---
 
 ## Architecture
@@ -66,17 +64,13 @@ All metrics logged to MLflow. Feature importances and confusion matrix saved as 
 
 ## Key Design Decisions
 
-**MLflow as the deployment control plane**
-Self-hostable — no API key, no SaaS dependency. The model registry, versioning, and alias system (`champion`, `challenger`) mean the experiment tracker doubles as the deployment control plane. Promoting a new model version is a single alias update. Rollback is one API call.
+**MLflow as deployment control plane:** Self-hostable, no SaaS dependency. `champion`/`challenger` aliases make promotion a single registry update and rollback a single API call.
 
-**PSI for drift — not just KS**
-A KS test tells you whether distributions differ (statistically significant). PSI tells you *by how much*. PSI < 0.1 means no meaningful drift, 0.1–0.2 warrants investigation, > 0.2 triggers retraining. That operational interpretation is what lets you set a retraining threshold. PSI and KS are used together: PSI for the decision, KS for per-feature significance.
+**PSI + KS for drift:** KS detects whether distributions differ; PSI quantifies by how much (< 0.1 stable, 0.1–0.2 investigate, > 0.2 retrain). Both are needed — one for decisions, one for significance.
 
-**Deterministic canary routing**
-`hash(request_id) % 100 < split * 100` — the same request always hits the same model version. Canary experiments are reproducible: replay a batch of requests and the routing is identical. No shared state, no sticky sessions, no load balancer configuration.
+**Deterministic canary routing:** `hash(request_id) % 100 < split * 100`. Same request always hits the same model version. Experiments are replayable; no shared state or sticky sessions.
 
-**Champion/challenger aliases over version numbers**
-The serving layer references `champion` and `challenger` aliases, never version numbers. Promotion updates which version an alias points to. Zero-downtime model updates are a registry operation, not a deployment operation.
+**Aliases over version numbers:** The serving layer references `champion`/`challenger`, never version numbers. Zero-downtime model updates are registry operations, not deployments.
 
 ---
 
@@ -156,7 +150,7 @@ Promotes version 4 from Staging to Production and archives the previous champion
 
 ### `GET /drift/report`
 
-Returns the latest drift detection report: per-feature PSI scores, KS p-values, and the `triggered` flag.
+Latest drift detection report: per-feature PSI scores, KS p-values, and the `triggered` flag.
 
 ### `GET /metrics`
 
